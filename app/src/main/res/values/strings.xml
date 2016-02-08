@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Practice APP</string>
+    <string name="action_settings">Settings</string>
+    <string name="fragment0">信号レベルが0に近いほど電波強度が強い</string>
+    <string name="fragment1">信号レベルが0に近いほど電波強度が強い</string>
+    <string name="fragment2">fragment 2</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
