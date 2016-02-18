@@ -230,4 +230,24 @@ public class Fragment0 extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("Action", "WiFi_onPause()");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("Action", "WiFi_onStop()");
+        mTimer.cancel();
+        mTimer = null;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d("Action", "WiFi_onDestroyView()");
+    }
 }

@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.dlv4119.practiceapp">
 
+    <!--WiFiの状態を参照する-->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!--WiFiの状態を変更する-->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <!--Bluetoothによる通信を許可する-->
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -10,8 +13,10 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <!-- Bluetooth LE に対応していることを証明する-->
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
     <!--vibrationの許可-->
     <uses-permission android:name="android.permission.VIBRATE"/>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
