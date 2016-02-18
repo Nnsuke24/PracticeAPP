@@ -23,6 +23,8 @@ public class MyFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
                 return new Fragment1();
             case 2:
                 return new Fragment2();
+            case 3:
+                return new Fragment3();
         }
         return null;
     }
@@ -30,18 +32,20 @@ public class MyFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
     /** ページ数を返す */
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 
     /** そのインデックスに応じたページのタイトルを返す */
     @Override
     public CharSequence getPageTitle(int position) {
         if (position == 0) {
-            return "WiFi 一覧";
+            return "WiFi AP 一覧";
         } else if (position == 1) {
-            return "WiFi Direct 一覧";
+            return "WiFi Direct AP 一覧";
         } else if (position == 2) {
             return "Bluetooth 一覧";
+        } else if (position == 3){
+            return "通知";
         }
         return null;
     }

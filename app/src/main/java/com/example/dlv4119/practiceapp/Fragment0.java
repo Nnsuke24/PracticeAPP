@@ -1,6 +1,10 @@
 package com.example.dlv4119.practiceapp;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -39,11 +43,17 @@ public class Fragment0 extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    WifiManager wifiManager = null;
-    List<ScanResult> scanResults = null;
-    ArrayAdapter<String> adapter = null;
-    String aps = null;
-    ArrayList<String> apList = null;
+    private WifiManager wifiManager = null;
+    private List<ScanResult> scanResults = null;
+    private ArrayAdapter<String> adapter = null;
+    private String aps = null;
+    private List<String> apList = new ArrayList<String>();
+    // 通知する基準の信号レベル(dBm)
+    private int notifyLevel = -30;
+    // 開始時刻からdelay(ミリ秒後)に1回目実行
+    private int delay = 3000;
+    // スキャン間隔(ミリ秒)
+    private int period = 3000;
 
     private Timer mTimer = null;
     private Handler mHandler = null;
@@ -74,15 +84,17 @@ public class Fragment0 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("Action", "WiFi_onCreate()");
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+//            mParam1 = getArguments().getString(ARG_PARAM1);
+//            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d("Action", "WiFi_onCreateView()");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment0, null);
 
@@ -96,11 +108,13 @@ public class Fragment0 extends Fragment {
         // アダプターを設定します
         listView.setAdapter(adapter);
 
+        Log.d("size", "adapterの初期サイズ :" + String.valueOf(adapter.getCount()));
+
         mHandler = new Handler();
         mTimer = new Timer();
         mUpdateTimerTask = new UpdateTimerTask();
         // taskオブジェクトのrunメソッドを現在時刻からdelay（ミリ秒）後を開始時点としてperiod（ミリ秒）間隔で実行する
-        mTimer.schedule(mUpdateTimerTask, 1000, 1000);
+        mTimer.schedule(mUpdateTimerTask, delay, period);
 
         return view;
     }
@@ -118,10 +132,12 @@ public class Fragment0 extends Fragment {
     public void updateList() {
         // リストの更新
         apList = getScanList();
-        adapter.clear();
-        adapter.addAll(apList);
+//        adapter.clear();
+//        adapter.addAll(apList);
         adapter.notifyDataSetChanged();
-        Log.d(MainActivity.getTag(), "リストを更新しました。");
+        Log.d(MainActivity.getTag(), "WiFi リストを更新しました。");
+        Log.d("size", "apList.size : " + String.valueOf(apList.size()));
+        Log.d("size", "adapter.count : " + String.valueOf(adapter.getCount()));
     }
 
     /**
@@ -129,18 +145,24 @@ public class Fragment0 extends Fragment {
      *
      * @return 接続可能なWiFi Direct APリスト　(文字列コレクション)
      */
-    public ArrayList getScanList() {
+    public List getScanList() {
+        apList.clear();
         scanResults = wifiManager.getScanResults();
-        apList = new ArrayList<>();
         Log.d(MainActivity.getTag(), "WiFi接続可能数：" + String.valueOf(scanResults.size()));
         for (int i = 0; i < scanResults.size(); i++) {
-            aps = "SSID:" + scanResults.get(i).SSID + "\n"
-                    + "チャンネル周波数：" + scanResults.get(i).frequency + "MHz " + "\n"
-                    + "信号レベル：" + scanResults.get(i).level + "dBm";
+            String ssid = scanResults.get(i).SSID;
+            int frequency = scanResults.get(i).frequency;
+            int level = scanResults.get(i).level;
+            // listViewに表示する内容をapListに格納する
+            aps = "SSID:" + ssid + "\n"
+                    + "チャンネル周波数：" + frequency + "MHz " + "\n"
+                    + "信号レベル：" + level + "dBm";
             apList.add(aps);
-
+            // 電波強度が0～-10dBmになった時に通知を送る
+            if (level <= 0 && level >= notifyLevel) {
+                wifiConnectNotify(ssid, level);
+            }
         }
-//        apList =  new ArrayList<String>(Arrays.asList(aps));
         return apList;
     }
 
@@ -158,6 +180,24 @@ public class Fragment0 extends Fragment {
         }
     }
 
+    public void wifiConnectNotify(String ssid, int level) {
+        // 通知選択時のインテントの作成
+        Intent notificationIntent = new Intent(getActivity(), com.example.dlv4119.practiceapp.MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(getActivity(), 0, notificationIntent, 0);
+        // ビルダー作成
+        Notification.Builder builder = new Notification.Builder(getActivity());
+        builder.setSmallIcon(R.drawable.ic_launcher);
+        builder.setContentTitle("インフォメーション");
+        builder.setContentText(ssid + "との電波強度が" + level + "dBmです。");
+        builder.setDefaults(Notification.DEFAULT_VIBRATE);
+        builder.setContentIntent(contentIntent);
+        // マネージャー作成
+        NotificationManager manager= (NotificationManager)getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
+        // 通知
+        manager.notify(1, builder.build());
+
+    }
+
 //    @Override
 //    public void onAttach(Context context) {
 //        super.onAttach(context);
@@ -172,6 +212,7 @@ public class Fragment0 extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        Log.d("Action", "WiFi_onDetach()");
         mListener = null;
     }
 

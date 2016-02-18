@@ -74,6 +74,7 @@ public class Fragment1 extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("Action", "Direct_onCreate()");
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -83,6 +84,7 @@ public class Fragment1 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d("Action", "Direct_onCreateView()");
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment1, null);
 
@@ -100,7 +102,8 @@ public class Fragment1 extends Fragment {
         mTimer = new Timer();
         mUpdateTimerTask = new UpdateTimerTask();
         // taskオブジェクトのrunメソッドを現在時刻からdelay（ミリ秒）後を開始時点としてperiod（ミリ秒）間隔で実行する
-        mTimer.schedule(mUpdateTimerTask, 1000, 1000);
+        mTimer.schedule(mUpdateTimerTask, 3000, 3000);
+//        mTimer.schedule(mUpdateTimerTask, 3000, 3000);
 
         return view;
     }
@@ -126,6 +129,7 @@ public class Fragment1 extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        Log.d("Action", "Direct_onDetach()");
         mListener = null;
     }
 
