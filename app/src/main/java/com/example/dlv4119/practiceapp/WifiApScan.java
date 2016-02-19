@@ -44,14 +44,14 @@ public class WifiApScan {
      */
     public List getScanList(boolean isDirect) {
         String aps;
-        WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
         apList.clear();
+        WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+        if (!wifiManager.isWifiEnabled()) {
+            apList.add("WiFi  OFF");
+            return apList;
+        }
         scanResults = wifiManager.getScanResults();
-        // WiFi接続 OFF のとき
-        if (scanResults == null) {
-
-        } //WiFi 接続 ON のとき
-        else {
+        if (scanResults != null) {
             Log.d(MainActivity.getTag(), "WiFi AP 接続可能数：" + String.valueOf(scanResults.size()));
             for (int i = 0; i < scanResults.size(); i++) {
                 String ssid = scanResults.get(i).SSID;
@@ -63,6 +63,9 @@ public class WifiApScan {
                                 + "チャンネル周波数：" + scanResults.get(i).frequency + "MHz " + "\n"
                                 + "信号レベル：" + scanResults.get(i).level + "dBm";
                         apList.add(aps);
+                    }
+                    if (apList.size() == 0) {
+                        apList.add("N/A");
                     }
                 } else {
                     // listViewに表示する内容をapListに格納する
@@ -76,6 +79,9 @@ public class WifiApScan {
 //                    wifiConnectNotify(ssid, level);
 //                }
             }
+        }
+        else {
+            apList.add("N/A");
         }
         return apList;
     }
