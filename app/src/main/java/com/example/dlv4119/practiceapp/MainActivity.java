@@ -32,11 +32,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+//        // WiFiに接続されていない時
+//        WifiManager wifiManager = (WifiManager)getSystemService(WIFI_SERVICE);
+//        if (wifiManager.isWifiEnabled() == false) {
+//            TextView connectStateText = (TextView)findViewById(R.id.connectState);
+//            connectStateText.setText("WiFiに接続されていません。");
+//        }
 
-        // ページビューの作成
-        FragmentManager manager = getSupportFragmentManager();
-        viewPager = (ViewPager) findViewById(R.id.pager);
-        viewPager.setAdapter(new MyFragmentStatePagerAdapter(manager));
+        // WiFiに接続されている時
+//        if (wifiManager.isWifiEnabled() == true) {
+            // ページビューの作成
+            FragmentManager fManager = getSupportFragmentManager();
+            viewPager = (ViewPager) findViewById(R.id.pager);
+            viewPager.setAdapter(new MyFragmentStatePagerAdapter(fManager));
+//        }
     }
 
     @Override

@@ -59,6 +59,9 @@ public class Fragment0 extends Fragment {
     private Handler mHandler = null;
     private UpdateTimerTask mUpdateTimerTask = null;
 
+    WifiApScan wifiApScan;
+    private final boolean ISDIRECT = false;
+
     public Fragment0() {
         // Required empty public constructor
     }
@@ -100,7 +103,8 @@ public class Fragment0 extends Fragment {
 
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         // 文字列コレクションの取得
-        apList = getScanList();
+        wifiApScan = new WifiApScan(getActivity());
+        apList = wifiApScan.getScanList(ISDIRECT);
         // 文字列型アダプターの作成 (文字列コレクションを設定)
         adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, apList);
         // リストビューオブジェクトを作成する
@@ -127,46 +131,6 @@ public class Fragment0 extends Fragment {
     }
 
     /**
-     * リストの更新
-     */
-    public void updateList() {
-        // リストの更新
-        apList = getScanList();
-//        adapter.clear();
-//        adapter.addAll(apList);
-        adapter.notifyDataSetChanged();
-        Log.d(MainActivity.getTag(), "WiFi リストを更新しました。");
-        Log.d("size", "apList.size : " + String.valueOf(apList.size()));
-        Log.d("size", "adapter.count : " + String.valueOf(adapter.getCount()));
-    }
-
-    /**
-     * スキャン結果からWiFi DirectのみのAPリストを作成
-     *
-     * @return 接続可能なWiFi Direct APリスト　(文字列コレクション)
-     */
-    public List getScanList() {
-        apList.clear();
-        scanResults = wifiManager.getScanResults();
-        Log.d(MainActivity.getTag(), "WiFi接続可能数：" + String.valueOf(scanResults.size()));
-        for (int i = 0; i < scanResults.size(); i++) {
-            String ssid = scanResults.get(i).SSID;
-            int frequency = scanResults.get(i).frequency;
-            int level = scanResults.get(i).level;
-            // listViewに表示する内容をapListに格納する
-            aps = "SSID:" + ssid + "\n"
-                    + "チャンネル周波数：" + frequency + "MHz " + "\n"
-                    + "信号レベル：" + level + "dBm";
-            apList.add(aps);
-            // 電波強度が0～-10dBmになった時に通知を送る
-            if (level <= 0 && level >= notifyLevel) {
-                wifiConnectNotify(ssid, level);
-            }
-        }
-        return apList;
-    }
-
-    /**
      * 繰り返しタスクを設定しているクラス
      */
     public class UpdateTimerTask extends TimerTask {
@@ -174,7 +138,12 @@ public class Fragment0 extends Fragment {
         public void run() {
             mHandler.post(new Runnable() {
                 public void run() {
-                    updateList();
+                    // リストの更新
+                    apList = wifiApScan.getScanList(ISDIRECT);
+                    adapter.notifyDataSetChanged();
+                    Log.d(MainActivity.getTag(), "WiFi リストを更新しました。");
+                    Log.d("size", "WiFi apList.size : " + String.valueOf(apList.size()));
+                    Log.d("size", "WiFi adapter.count : " + String.valueOf(adapter.getCount()));
                 }
             });
         }
@@ -241,8 +210,10 @@ public class Fragment0 extends Fragment {
     public void onStop() {
         super.onStop();
         Log.d("Action", "WiFi_onStop()");
-        mTimer.cancel();
-        mTimer = null;
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
     }
 
     @Override

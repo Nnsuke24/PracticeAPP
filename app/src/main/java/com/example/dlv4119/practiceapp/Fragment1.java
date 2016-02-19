@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -39,15 +38,18 @@ public class Fragment1 extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    WifiManager wifiManager = null;
-    List<ScanResult> scanResults = null;
-    ArrayAdapter<String> adapter = null;
-    String aps = null;
-    ArrayList<String> apList = null;
+    private WifiManager wifiManager = null;
+    private List<ScanResult> scanResults = null;
+    private ArrayAdapter<String> adapter = null;
+    private String aps = null;
+    private List<String> apList = null;
 
     private Timer mTimer = null;
     private Handler mHandler = null;
     private UpdateTimerTask mUpdateTimerTask = null;
+
+    WifiApScan wifiApScan;
+    private final boolean ISDIRECT = true;
 
     public Fragment1() {
         // Required empty public constructor
@@ -90,7 +92,8 @@ public class Fragment1 extends Fragment {
 
         wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
         // 文字列コレクションの取得
-        apList = getScanList();
+        wifiApScan = new WifiApScan(getActivity());
+        apList = wifiApScan.getScanList(ISDIRECT);
         // 文字列型アダプターの作成 (文字列コレクションを設定)
         adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, apList);
         // リストビューオブジェクトを作成する
@@ -149,39 +152,6 @@ public class Fragment1 extends Fragment {
     }
 
     /**
-     * リストの更新
-     */
-    public void updateList() {
-        // リストの更新
-        apList = getScanList();
-        adapter.clear();
-        adapter.addAll(apList);
-        adapter.notifyDataSetChanged();
-        Log.d(MainActivity.getTag(), "Directリストを更新しました。");
-    }
-
-    /**
-     * スキャン結果からWiFi DirectのみのAPリストを作成
-     *
-     * @return 接続可能なWiFi Direct APリスト　(文字列コレクション)
-     */
-    public ArrayList getScanList() {
-        scanResults = wifiManager.getScanResults();
-        apList = new ArrayList<>();
-        for (int i = 0; i < scanResults.size(); i++) {
-            if (scanResults.get(i).SSID.startsWith("DIRECT")){
-                aps = "SSID:" + scanResults.get(i).SSID + "\n"
-                        + "チャンネル周波数：" + scanResults.get(i).frequency + "MHz " + "\n"
-                        + "信号レベル：" + scanResults.get(i).level + "dBm";
-                apList.add(aps);
-            }
-        }
-        Log.d(MainActivity.getTag(), "Direct接続可能数：" + String.valueOf(apList.size()));
-//        apList =  new ArrayList<String>(Arrays.asList(aps));
-        return apList;
-    }
-
-    /**
      * 繰り返しタスクを設定しているクラス
      */
     public class UpdateTimerTask extends TimerTask {
@@ -189,9 +159,36 @@ public class Fragment1 extends Fragment {
         public void run() {
             mHandler.post(new Runnable() {
                 public void run() {
-                    updateList();
+                    // リストの更新
+                    apList = wifiApScan.getScanList(ISDIRECT);
+                    adapter.notifyDataSetChanged();
+                    Log.d(MainActivity.getTag(), "Directリストを更新しました。");
+                    Log.d("size", "Direct apList.size : " + String.valueOf(apList.size()));
+                    Log.d("size", "Direct adapter.count : " + String.valueOf(adapter.getCount()));
                 }
             });
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d("Action", "WiFi_onPause()");
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.d("Action", "WiFi_onStop()");
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.d("Action", "WiFi_onDestroyView()");
     }
 }
