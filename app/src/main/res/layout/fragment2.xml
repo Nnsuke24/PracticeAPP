@@ -4,14 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/fragment2"
-        android:textSize="15sp" />
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/BtListView"
-        android:layout_below="@+id/text" />
+        android:id="@+id/BtListView" />
 </LinearLayout>

@@ -213,6 +213,7 @@ public class Fragment0 extends Fragment {
         if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
+            Log.d("TimerTask", "タイマータスクの終了！");
         }
     }
 

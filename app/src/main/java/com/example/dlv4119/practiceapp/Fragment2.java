@@ -43,10 +43,11 @@ public class Fragment2 extends Fragment {
     final String TAG = "Result";
 
     private ListView mListView;
-    private ArrayList<String> mScanList;
+    private ArrayList<String> mScanList = new ArrayList<String>();
     private ArrayAdapter<String> mAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private String mResult = "";
+    private boolean doAdd = true;
 
     // ブロードキャストレシーバーの操作
     private BroadcastReceiver mBluetoothSearchReceiver = new BroadcastReceiver() {
@@ -58,23 +59,31 @@ public class Fragment2 extends Fragment {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // RSSI値読み出し
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
-                mScanList = new ArrayList<String>();
-                if (mResult != null) {
-                    mScanList.add(mResult);
-                }
-                mResult = "";
-                mResult += "Name : " + device.getName() + "\n"
-                        + "Device Class : " + device.getBluetoothClass().getDeviceClass() + "\n"
-                        + "MAC Address : " + device.getAddress() + "\n"
-                        + "State : " + getBondState(device.getBondState()) + "\n"
-                        + "RSSI : " + String.valueOf(rssi);
-                Log.d(TAG, "デバイス名を取得しました。");
-                Log.d(TAG, "デバイスクラスを取得しました。");
-                Log.d(TAG, "MACアドレスを取得しました。");
-                Log.d(TAG, "接続状態を取得しました。");
-                Log.d(TAG, "電波強度(RSSI)を取得しました。");
-                mScanList.add(mResult);
 
+                // 初回Bluetooth取得
+                if (mResult.isEmpty()) {
+                    mResult = getDeviceInfo(device, rssi);
+                    mScanList.add(mResult);
+                    Log.d("Bluetooth", "初回追加 deviceName:" + device.getName());
+                    // 2回目以降の追加の場合、新しい情報を更新もしくは追加
+                } else {
+                    for (int i = 0; i < mScanList.size(); i++) {
+                        // 以前取得した情報と同じなら更新する
+                        if (mScanList.get(i).startsWith("Name : " + device.getName())) {
+                            mScanList.remove(i);
+                            mResult = getDeviceInfo(device, rssi);
+                            mScanList.add(i, mResult);
+                            Log.d("Bluetooth", "情報更新 deviceName:" + device.getName());
+                            doAdd = false;
+                        }
+                    }
+                    if (doAdd) {
+                        mResult = getDeviceInfo(device, rssi);
+                        mScanList.add(mResult);
+                        Log.d("Bluetooth", "情報追加 deviceName:" + device.getName());
+                    }
+                    doAdd = true;
+                }
                 mAdapter.clear();
                 mAdapter.addAll(mScanList);
                 mAdapter.notifyDataSetChanged();
@@ -169,6 +178,16 @@ public class Fragment2 extends Fragment {
         return strState;
     }
 
+    public String getDeviceInfo(BluetoothDevice device, int rssi){
+        String str;
+        str = "Name : " + device.getName() + "\n"
+                + "Device Class : " + device.getBluetoothClass().getDeviceClass() + "\n"
+                + "MAC Address : " + device.getAddress() + "\n"
+                + "State : " + getBondState(device.getBondState()) + "\n"
+                + "RSSI : " + String.valueOf(rssi);
+        return str;
+    }
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -186,6 +205,12 @@ public class Fragment2 extends Fragment {
 //                    + " must implement OnFragmentInteractionListener");
 //        }
 //    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(mBluetoothSearchReceiver);
+    }
 
     @Override
     public void onDetach() {

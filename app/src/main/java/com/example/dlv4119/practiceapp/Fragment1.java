@@ -111,6 +111,25 @@ public class Fragment1 extends Fragment {
         return view;
     }
 
+    /**
+     * 繰り返しタスクを設定しているクラス
+     */
+    public class UpdateTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            mHandler.post(new Runnable() {
+                public void run() {
+                    // リストの更新
+                    apList = wifiApScan.getScanList(ISDIRECT);
+                    adapter.notifyDataSetChanged();
+                    Log.d(MainActivity.getTag(), "Directリストを更新しました。");
+                    Log.d("size", "Direct apList.size : " + String.valueOf(apList.size()));
+                    Log.d("size", "Direct adapter.count : " + String.valueOf(adapter.getCount()));
+                }
+            });
+        }
+    }
+
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
@@ -149,25 +168,6 @@ public class Fragment1 extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-    }
-
-    /**
-     * 繰り返しタスクを設定しているクラス
-     */
-    public class UpdateTimerTask extends TimerTask {
-        @Override
-        public void run() {
-            mHandler.post(new Runnable() {
-                public void run() {
-                    // リストの更新
-                    apList = wifiApScan.getScanList(ISDIRECT);
-                    adapter.notifyDataSetChanged();
-                    Log.d(MainActivity.getTag(), "Directリストを更新しました。");
-                    Log.d("size", "Direct apList.size : " + String.valueOf(apList.size()));
-                    Log.d("size", "Direct adapter.count : " + String.valueOf(adapter.getCount()));
-                }
-            });
-        }
     }
 
     @Override
